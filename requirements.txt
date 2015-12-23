@@ -1,0 +1,11 @@
+mysql-python
+markdown
+
+# django & plugins
+django
+djangorestframework
+django-filter
+django-extensions
+djangorestframework-jwt
+django-crispy-forms
+django-guardian
