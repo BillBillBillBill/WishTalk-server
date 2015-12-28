@@ -1,78 +1,48 @@
 #coding:utf-8
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 from rest_framework import permissions
 from rest_framework import renderers
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
-from rest_framework.decorators import api_view
-from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, RetrieveAPIView
 from api.models import Snippet
-from django.http import Http404
-from api.permissions import IsOwnerOrReadOnly
-from api.serializers import SnippetSerializer, UserSerializer
+from api.permissions import IsOwnerOrReadOnly, IsOwner
+from api.serializers import SnippetSerializer, UserSerializer, TokenSerializer
 
 
-class SnippetList(APIView):
+class SnippetViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
+
+    Additionally we also provide an extra `highlight` action.
+    """
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                      IsOwnerOrReadOnly,)
-    """
-    List all snippets, or create a new snippet.
-    """
-    def get(self, request, format=None):
-        snippets = Snippet.objects.all()
-        serializer = SnippetSerializer(snippets, many=True)
-        return Response(serializer.data)
+                          IsOwnerOrReadOnly,)
 
-    def post(self, request, format=None):
-        serializer = SnippetSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    @detail_route(renderer_classes=[renderers.StaticHTMLRenderer])
+    def highlight(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-class SnippetDetail(APIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                      IsOwnerOrReadOnly,)
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Retrieve, update or delete a snippet instance.
+    这一viewset提供了`list`和`detail`
     """
-    def get_object(self, pk):
-        try:
-            return Snippet.objects.get(pk=pk)
-        except Snippet.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        snippet = self.get_object(pk)
-        serializer = SnippetSerializer(snippet)
-        return Response(serializer.data)
-
-    def put(self, request, pk, format=None):
-        snippet = self.get_object(pk)
-        serializer = SnippetSerializer(snippet, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, format=None):
-        snippet = self.get_object(pk)
-        snippet.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-class UserList(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
-class UserDetail(RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class TokenViewSet(viewsets.ModelViewSet):
+    """
+    这一viewset提供了`list`和`detail`
+    """
+    queryset = Token.objects.all()
+    serializer_class = TokenSerializer
