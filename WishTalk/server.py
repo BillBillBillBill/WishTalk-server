@@ -41,11 +41,10 @@ class App(object):
 
 
 app = App()
-
 db = SQLAlchemy(app.app)
 redisClient = redis.Redis(host='127.0.0.1', port=REDIS_PORT, db=REDIS_DB)
 
-#test
+
 @app.app.route('/', methods=["GET"])
 def index():
     return redirect('/admin/')

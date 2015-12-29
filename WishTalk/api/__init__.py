@@ -8,7 +8,7 @@ api = Blueprint('api', __name__)
 # Define error code
 ERROR_GLOBAL        = 0000
 ERROR_USER          = 1000
-ERROR_SECRET        = 2000
+ERROR_WISH          = 2000
 ERROR_ONE_PICTURE   = 3000
 ERROR_LIKE          = 4000
 ERROR_COMMENT       = 5000
@@ -43,22 +43,14 @@ class GlobalError():
     }
 
 
-#test
 @api.route('/', methods=["GET"])
 def index():
     from flask import render_template
     return render_template('testapi.html')
 
-#test
-@api.route('/sb', methods=["GET"])
-def wrong():
-    return jsonError(GlobalError.INVALID_ARGUMENTS)
-
 # api's
 import user
-import secret
+import wish
 import like
 import comment
-import report
-import collect
 import image

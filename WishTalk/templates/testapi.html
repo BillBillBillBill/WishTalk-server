@@ -145,7 +145,7 @@
 
     <div data-am-widget="titlebar" class="am-titlebar am-titlebar-default" >
         <h2 class="am-titlebar-title ">
-            木盟API
+            心愿说API
         </h2>
     </div>
 
@@ -159,13 +159,10 @@
             <option value ="user">user</option>
             <option value ="user/password_reset">user/password_reset</option>
             <option value ="session">session</option>
-            <option disabled>=====爆料部分=====</option>
-            <option value="secret">secret</option>
-            <option value="secret/like">secret/like</option>
-            <option value="secret/collect">secret/collect</option>
-            <option value="secret/comment">secret/comment</option>
-            <option value="secret_comment/like">secret_comment/like</option>
-            <option value="secret/report">secret/report</option>
+            <option disabled>=====心愿部分=====</option>
+            <option value="wish">wish</option>
+            <option value="wish/like">wish/like</option>
+            <option value="wish/comment">wish/comment</option>
         </select>
         <input class="am-input" type="text" style="display:inline-block;width:90px" size="2" id="ex_url" placeholder='额外的ID'/><span>若填写,自动在此前加/</span>
     </p>
@@ -478,7 +475,7 @@
                 methodNotExist();
             }
         }
-        else if (url == "secret") {
+        else if (url == "wish") {
             hidePut();
             if (method == "GET") {
                 addCol("token");
@@ -488,7 +485,9 @@
             }
             if (method == "POST") {
                 addCol("token");
-                addCol("topic");
+                addCol("title");
+                addCol("location");
+                addCol("out_time");
                 addCol("content");
             }
             if (method == "PUT") {
@@ -498,7 +497,7 @@
                 addCol("token");
             }
         }
-        else if (url == "secret/like") {
+        else if (url == "wish/like") {
             hideGet();
             hidePut();
             if (method == "GET") {
@@ -514,24 +513,7 @@
                 addCol("token");
             }
         }
-        else if (url == "secret/collect") {
-            hidePut();
-            if (method == "GET") {
-                addCol("token");
-                addCol("limit");
-                addCol("offset");
-            }
-            if (method == "POST") {
-                addCol("token");
-            }
-            if (method == "PUT") {
-                methodNotExist();
-            }
-            if (method == "DELETE") {
-                addCol("token");
-            }
-        }
-        else if (url == "secret/comment") {
+        else if (url == "wish/comment") {
             hidePut();
             if (method == "GET") {
                 addCol("token");
@@ -548,40 +530,6 @@
             }
             if (method == "DELETE") {
                 addCol("token");
-            }
-        }
-        else if (url == "secret_comment/like") {
-            hideGet();
-            hidePut();
-            if (method == "GET") {
-                methodNotExist();
-            }
-            if (method == "POST") {
-                addCol("token");
-            }
-            if (method == "PUT") {
-                methodNotExist();
-            }
-            if (method == "DELETE") {
-                addCol("token");
-            }
-        }
-        else if (url == "secret/report") {
-            hideGet();
-            hidePut();
-            hideDelete();
-            if (method == "GET") {
-                methodNotExist();
-            }
-            if (method == "POST") {
-                addCol("token");
-                addCol("content");
-            }
-            if (method == "PUT") {
-                methodNotExist();
-            }
-            if (method == "DELETE") {
-                methodNotExist();
             }
         }
         };

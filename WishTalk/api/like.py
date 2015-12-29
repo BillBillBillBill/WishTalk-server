@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from util.message import push_message
 from util.token import token_required
 from server import db
 from api import api, GlobalError, ERROR_LIKE
-from model.secret import Secret, SecretLike, SecretComment, SecretCommentLike
-from model.onePicture import OnePicture, OnePictureLike
-from model.schoolNews import SchoolNews, SchoolNewsLike, SchoolNewsComment, SchoolNewsCommentLike
-from model.association import AssociationPost, AssociationPostLike, AssociationPostComment, AssociationPostCommentLike
-from model.internship import Internship, InternshipLike, InternshipComment, InternshipCommentLike
-from model.freshmanGuide import FreshmanGuide, FreshmanGuideLike, FreshmanGuideComment, FreshmanGuideCommentLike
-from model.diskSharing import DiskSharing, DiskSharingLike, DiskSharingComment, DiskSharingCommentLike
+from model.wish import Wish, WishLike
 from flask import abort
 from sqlalchemy.exc import IntegrityError
 from util.jsonResponse import jsonSuccess, jsonError
@@ -21,19 +14,7 @@ from util.jsonResponse import jsonSuccess, jsonError
 '''
 
 ALLOW_RESOURCE = {  
-    'secret': [Secret, SecretLike],
-    'secret_comment': [SecretComment, SecretCommentLike],
-    'one_pic': [OnePicture, OnePictureLike],
-    'schoolnews': [SchoolNews, SchoolNewsLike],
-    'schoolnews_comment': [SchoolNewsComment, SchoolNewsCommentLike],
-    'association': [AssociationPost, AssociationPostLike],
-    'association_comment': [AssociationPostComment, AssociationPostCommentLike],
-    'internship': [Internship, InternshipLike],
-    'internship_comment': [InternshipComment, InternshipCommentLike],
-    'freshman_guide': [FreshmanGuide, FreshmanGuideLike],
-    'freshman_guide_comment': [FreshmanGuideComment, FreshmanGuideCommentLike],
-    'disk_sharing': [DiskSharing, DiskSharingLike],
-    'disk_sharing_comment': [DiskSharingComment, DiskSharingCommentLike]
+    'wish': [Wish, WishLike]
 }
 
 class LikeError:
@@ -60,9 +41,6 @@ def like(current_user, resource_name=None, target_id=None):
         like = Cls[1](current_user.id, target_id)
         db.session.add(like)
         db.session.commit()
-        target = Cls[0].query.get(target_id)
-        if target.user_id != current_user.id:
-            push_message(resource_name + '_like', target, current_user)
         return jsonSuccess(), 201
     except IntegrityError, e:
         db.session.rollback()

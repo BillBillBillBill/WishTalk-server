@@ -2,6 +2,6 @@
 
 __all__ = [
     "user",
-    "secret",
+    "wish",
     "image",
 ]

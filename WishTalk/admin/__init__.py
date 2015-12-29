@@ -3,49 +3,40 @@ from flask import render_template
 from flask import Blueprint
 from flask import request
 from server import db
-from dashboard import get_users_count, get_store_count, get_product_count, get_image_count
+from dashboard import get_users_count, get_image_count
 from model import *
-from api.channel import get_base_channel_real_name_to_display_name_dict
 import json
 import inspect
 
 
 admin = Blueprint('admin', __name__)
 
-real_name_to_display_name_dict = get_base_channel_real_name_to_display_name_dict()
+
 ALLOW_TABLE_LIST = []
 
 ALLOW_TABLE_LIST_OTHER = []
 ALLOW_TABLE_LIST_COMMENT = []
-ALLOW_TABLE_LIST_REPORT = []
-ALLOW_TABLE_LIST_SETTING = []
 
 ALLOW_TABLE_MAP = {}
-
 
 # 重新载入名称
 def load_ALLOW_TABLE_LIST():
     global real_name_to_display_name_dict
     global ALLOW_TABLE_LIST_OTHER
     global ALLOW_TABLE_LIST_COMMENT
-    global ALLOW_TABLE_LIST_REPORT
-    global ALLOW_TABLE_LIST_SETTING
     global ALLOW_TABLE_MAP
     global ALLOW_TABLE_LIST
 
     ALLOW_TABLE_LIST_OTHER = []
     ALLOW_TABLE_LIST_COMMENT = []
-    ALLOW_TABLE_LIST_REPORT = []
-    ALLOW_TABLE_LIST_SETTING = []
 
-    real_name_to_display_name_dict = get_base_channel_real_name_to_display_name_dict()
     # 让其有序 用列表存keys
     ALLOW_TABLE_LIST = [
-        ['secret', real_name_to_display_name_dict['secret']],
+        ['wish', u'心愿'],
         ['user', u'用户'],
         ['user_info', u'用户详细信息'],
         ['upload_image', u'上传的照片'],
-        ['comment_secret', u'评论-'+real_name_to_display_name_dict['secret']],
+        ['comment_wish', u'心愿评论'],
     ]
     for table in ALLOW_TABLE_LIST:
         ALLOW_TABLE_LIST_OTHER.append(table)
@@ -53,19 +44,16 @@ def load_ALLOW_TABLE_LIST():
     ALLOW_TABLE_MAP = {
         'others': ALLOW_TABLE_LIST_OTHER,
         'comments': ALLOW_TABLE_LIST_COMMENT,
-        'reports': ALLOW_TABLE_LIST_REPORT,
-        'settings': ALLOW_TABLE_LIST_SETTING,
     }
 
 load_ALLOW_TABLE_LIST()
 
-
 TABLE_NAME_TO_MODEL = {
-    'secret': secret.Secret,
+    'wish': wish.Wish,
     'user': user.User,
     'user_info': user.UserInfo,
     'upload_image': image.Image,
-    'comment_secret': secret.SecretComment,
+    'comment_wish': wish.WishComment,
 }
 
 # 创建新项需要的键
@@ -82,12 +70,10 @@ for x, y in ALLOW_TABLE_LIST:
 def render_index():
     return render_template(
         'index.html',
-        title=u'木盟校园APP-仪表盘',
+        title=u'心愿说APP-仪表盘',
         module_name=u'仪表盘',
         tables_name=ALLOW_TABLE_MAP,
         users_count=get_users_count(),
-        store_count=get_store_count(),
-        product_count=get_product_count(),
         image_count=get_image_count()
     )
 
@@ -97,7 +83,7 @@ def render_widgets():
     return render_template(
         'widgets.html',
         tables_name=ALLOW_TABLE_MAP,
-        title=u'木盟校园APP-插件',
+        title=u'心愿说APP-插件',
         module_name=u'插件'
     )
 
@@ -107,7 +93,7 @@ def render_charts():
     return render_template(
         'charts.html',
         tables_name=ALLOW_TABLE_MAP,
-        title=u'木盟校园APP-图表',
+        title=u'心愿说APP-图表',
         module_name=u'图表'
     )
 
@@ -127,154 +113,34 @@ def render_tables(table_name=None):
     table_data_str = json.dumps(table_source)
     # 数据的键(全部，用于表头)
     table_data_keys = table_source[0].keys() if table_source else None
-    # 数据的值
-    # table_data_values = table_source[0].values() if table_source else None
-    # 数据项的类型
-    # table_data_types = map(lambda value:'number' if isinstance(value, int) or isinstance(value, float) or isinstance(value, long) else 'text', table_data_values) if table_data_values else None
+
     # 用于控制按钮是否可见
     btn_control = {}
     enable_update_btn_table_list = [
-        'secret',
-        'one_picture',
-        'school_news',
-        'disk_sharing',
-        'disk_sharing_category',
-        'freshman_guide',
-        'association',
-        'association_post',
-        'association_manager',
-        'internship',
-        'store',
-        'product',
-        'product_category',
-        'product_default_category',
-        'order',
-        'order_product',
-        'order_coupon',
+        'wish',
         'user',
         'user_info',
-        'couponer',
-        'coupon',
-        'purse',
-        'announcement',
-        'advertisement_boot',
-        'advertisement_carousel',
-        'channel_base',
-        'channel_extra',
-        'sticky_post',
-        'sticky_product',
-        'admin',
-        'comment_association',
-        'comment_secret',
-        'comment_school_news',
-        'comment_internship',
-        'comment_disk_sharing',
-        'comment_freshman_guide'
     ]
     enable_delete_btn_table_list = [
-        'secret',
-        'one_picture',
-        'school_news',
-        'disk_sharing',
-        'disk_sharing_category',
-        'freshman_guide',
-        'association',
-        'association_post',
-        'association_manager',
-        'internship',
-        'store',
-        'product',
-        'product_category',
-        'product_default_category',
-        'order',
-        'order_product',
-        'order_coupon',
-        'payment',
+        'wish',
         'user',
         'user_info',
-        'couponer',
-        'coupon',
-        'feedback',
         'upload_image',
-        'announcement',
-        'advertisement_boot',
-        'advertisement_carousel',
-        'channel_extra',
-        'sticky_post',
-        'sticky_product',
-        'admin',
-        'comment_association',
-        'comment_secret',
-        'comment_school_news',
-        'comment_internship',
-        'comment_disk_sharing',
-        'comment_freshman_guide',
-        'report_secret',
-        'report_one_pic',
-        'report_schoolnews',
-        'report_association',
-        'report_internship',
-        'report_store',
-        'report_disk_sharing',
-        'report_freshman_guide',
+        'comment_wish',
     ]
     enable_create_btn_table_list = [
-        'secret',
-        'one_picture',
-        'school_news',
-        'disk_sharing',
-        'disk_sharing_category',
-        'freshman_guide',
-        'association',
-        'association_post',
-        'association_manager',
-        'internship',
-        'store',
-        'product',
-        'product_category',
-        'product_default_category',
-        'payment',
+        'wish',
         'user',
-        'couponer',
-        'coupon',
-        'announcement',
-        'advertisement_boot',
-        'advertisement_carousel',
-        'channel_extra',
-        'sticky_post',
-        'sticky_product',
-        'admin',
-        'comment_association',
-        'comment_secret',
-        'comment_school_news',
-        'comment_internship',
-        'comment_disk_sharing',
-        'comment_freshman_guide',
+        'comment_wish',
     ]
     enable_show_img_btn_table_list = [
-        'one_picture',
-        'school_news',
-        'disk_sharing',
-        'freshman_guide',
-        'association',
-        'association_post',
-        'store',
-        'product',
-        'user',
-        'couponer',
         'upload_image',
-        'advertisement_boot',
-        'advertisement_carousel',
-        'channel_base',
-        'channel_extra',
     ]
 
     btn_control['update_btn'] = True if table_name in enable_update_btn_table_list else False
     btn_control['delete_btn'] = True if table_name in enable_delete_btn_table_list else False
     btn_control['create_btn'] = True if table_name in enable_create_btn_table_list else False
     btn_control['show_img_btn'] = True if table_name in enable_show_img_btn_table_list else False
-    btn_control['ban_user_btn'] = True if table_name == 'user' else False
-    btn_control['show_or_hide_channel_btn'] = True if table_name == 'channel_base' else False
 
     if table_name in TABLE_NAME_TO_DISPLAY_NAME.keys():
         return render_template(
@@ -284,7 +150,7 @@ def render_tables(table_name=None):
             table_data_keys=table_data_keys,
             table_data_str=table_data_str,
             table_new_data_keys=table_new_data_keys,
-            title=u'木盟校园APP-' + TABLE_NAME_TO_DISPLAY_NAME[table_name] + u'表格',
+            title=u'心愿说APP-' + TABLE_NAME_TO_DISPLAY_NAME[table_name] + u'表格',
             module_name=TABLE_NAME_TO_DISPLAY_NAME[table_name]
         )
 
@@ -294,7 +160,7 @@ def render_forms():
     return render_template(
         'img_file_manage.html',
         tables_name=ALLOW_TABLE_MAP,
-        title=u'木盟校园APP-图片上传',
+        title=u'心愿说APP-图片上传',
         module_name=u'图片上传'
     )
 
@@ -304,7 +170,7 @@ def render_panels():
     return render_template(
         'panels.html',
         tables_name=ALLOW_TABLE_MAP,
-        title=u'木盟校园APP-面板',
+        title=u'心愿说APP-面板',
         module_name=u'面板'
     )
 
@@ -331,9 +197,6 @@ def create_table_row(table_name):
         new_row = table_model(*[j.get(k) for k in keys])
         db.session.add(new_row)
         db.session.commit()
-        # 栏目情况
-        if table_name == 'channel_base':
-            load_ALLOW_TABLE_LIST()
         return "", 200
     except Exception, e:
         db.session.rollback()
@@ -355,11 +218,7 @@ def update_table_row(table_name, model_id):
                 return "", 200
             else:
                 return "", 400
-
         updateDict = {}
-        # for k in keys:
-        #     updateDict[k] = j.get(k)
-
         for k, v in j.items():
             if k in dir(table_model):
                 try:
@@ -378,9 +237,6 @@ def update_table_row(table_name, model_id):
 
         table_model.query.filter_by(id = model_id).update(updateDict)
         db.session.commit()
-        # 栏目情况
-        if table_name == 'channel_base':
-            load_ALLOW_TABLE_LIST()
         return "", 200
     except Exception, e:
         db.session.rollback()
@@ -394,34 +250,6 @@ def delete_table_row(table_name, model_id):
     try:
         table_model = TABLE_NAME_TO_MODEL[table_name]
         table_model.query.filter(table_model.id==model_id).delete()
-        db.session.commit()
-        return "", 200
-    except Exception, e:
-        db.session.rollback()
-        print e
-        return "", 400
-
-
-# 把用户列入/解除黑名单
-@admin.route('/ban_user/<int:user_id>', methods=["DELETE"])
-def ban_user(user_id):
-    try:
-        u = user.User.query.filter(user.User.id==user_id).first()
-        u.is_blocked = False if u.is_blocked else True
-        db.session.commit()
-        return "", 200
-    except Exception, e:
-        db.session.rollback()
-        print e
-        return "", 400
-
-
-# 把显示/隐藏
-@admin.route('/show_or_hide_channel/<int:channel_id>', methods=["POST"])
-def show_or_hide_channel(channel_id):
-    try:
-        c = channel.BaseChannel.query.filter(channel.BaseChannel.id==channel_id).first()
-        c.visible = False if c.visible else True
         db.session.commit()
         return "", 200
     except Exception, e:

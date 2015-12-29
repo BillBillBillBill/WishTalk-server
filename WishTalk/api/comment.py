@@ -3,28 +3,17 @@
 from util.token import token_required, token_required_unnecessary
 from server import db
 from api import api, GlobalError, ERROR_COMMENT
-from model.secret import Secret, SecretComment
-from model.schoolNews import SchoolNews, SchoolNewsComment
-from model.association import AssociationPost, AssociationPostComment
-from model.internship import Internship, InternshipComment
-from model.freshmanGuide import FreshmanGuide, FreshmanGuideComment
-from model.diskSharing import DiskSharing, DiskSharingComment
+from model.wish import Wish, WishComment
 from flask import abort, request
 from sqlalchemy.exc import IntegrityError
 from util.jsonResponse import jsonSuccess, jsonError
-from util.message import push_message
 '''
 重要提示：Model的设计中，需要确保每个Comment的类的backref的名称为comments!
 每完成一个Comment Model，需要往下方的字典添加响应类名
 '''
 
 ALLOW_RESOURCE = {  
-    'secret': [Secret, SecretComment],
-    'schoolnews': [SchoolNews, SchoolNewsComment],
-    'association': [AssociationPost, AssociationPostComment],
-    'internship': [Internship, InternshipComment],
-    'freshman_guide': [FreshmanGuide, FreshmanGuideComment],
-    'disk_sharing': [DiskSharing, DiskSharingComment]
+    'wish': [Wish, WishComment]
 }
 
 class CommentError:
@@ -75,20 +64,14 @@ def comment(current_user, resource_name=None, target_id=None):
         abort(404)
 
     content = request.json.get('content', '')
-    at_user_id = request.json.get('at_user_id', None)
 
     if not content:
         return jsonError(CommentError.EMPTY_CONTENT), 403
 
     try:
-        comment = Cls[1](current_user.id, at_user_id, target_id, content)
+        comment = Cls[1](current_user.id, target_id, content)
         db.session.add(comment)
         db.session.commit()
-        target = Cls[0].query.get(target_id)
-        if target.user_id != current_user.id:
-            push_message(resource_name + '_comment', target, current_user, content)
-        if at_user_id:
-            push_message(resource_name + '_comment_at_you', target, current_user, content)
         return jsonSuccess({'insert_id': comment.id}), 201
     except Exception, e:
         db.session.rollback()

@@ -7,12 +7,11 @@ from hmac import HMAC
 from flask import request
 
 from api import api, ERROR_USER, GlobalError
-from model.purse import Purse
 from model.user import User, UserInfo
 from server import db, redisClient
 from util.jsonResponse import jsonSuccess, jsonError
 from util.token import token_required
-from util.rcim import update_rcim_user
+
 
 '''
 登入/登出对应的服务端资源应该是session，所以相关api应该如下：
@@ -58,10 +57,6 @@ class UserError():
     FORM_DATA_INVALID = {   
         'err': ERROR_USER + 7,
         'msg': 'Form Data Invalid'
-    }
-    CREATE_PURSE_FAIL = {
-        'err': ERROR_USER + 8,
-        'msg': 'Create Purse Fail'
     }
     MOBILE_NUMBER_ILLEGAL = {
         'err': ERROR_USER + 9,
@@ -126,15 +121,6 @@ def register(username, password, nickname, avatar):
         user_info = UserInfo(newUser.id)
         db.session.add(user_info)
         db.session.commit()
-        # 创建钱包
-        try:
-            purse = Purse(newUser.id)
-            db.session.add(purse)
-            db.session.flush()
-            db.session.commit()
-        except Exception, e:
-            print e
-            return jsonError(UserError.CREATE_PURSE_FAIL), 400
         return login(username, password)
     except Exception, e:
         db.session.rollback()
@@ -373,9 +359,6 @@ def update(current_user):
         userInfo.update(userInfo.first().get_update_dict(request.json))
 
         db.session.commit()
-
-        if request.json.get("avatar") or request.json.get("nickname"):
-            update_rcim_user(current_user)
 
         return jsonSuccess({'msg':'update user success'}), 200
     except Exception, e:
