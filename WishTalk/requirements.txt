@@ -1,0 +1,6 @@
+redis
+SQLAlchemy
+flask
+Flask-Redis
+Flask-SQLAlchemy
+supervisor

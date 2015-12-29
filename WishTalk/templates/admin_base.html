@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+
+<link href="{{ url_for('static', filename='admin/css/bootstrap.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='admin/css/datepicker3.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='admin/css/styles.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='admin/css/bootstrap-table.css') }}" rel="stylesheet">
+<!--[if lt IE 9]>
+<script src="{{ url_for('static', filename='admin/js/html5shiv.js') }}"></script>
+<script src="{{ url_for('static', filename='admin/js/respond.min.js') }}"></script>
+<![endif]-->
+
+</head>
+
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#sidebar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="/admin"><span>木盟校园APP</span>管理</a>
+				<ul class="user-menu">
+					<li class="dropdown pull-right">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-user"></span> 用户 <span class="caret"></span></a>
+						<ul class="dropdown-menu" role="menu">
+							<li><a href="#"><span class="glyphicon glyphicon-user"></span>资料</a></li>
+							<li><a href="#"><span class="glyphicon glyphicon-cog"></span>设置</a></li>
+							<li><a href="#"><span class="glyphicon glyphicon-log-out"></span>注销</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div><!-- /.container-fluid -->
+	</nav>
+
+	<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+		<form role="search" id="search">
+			<div class="form-group">
+				<input id="search-input" name="filename" type="text" class="form-control" placeholder="搜索图片">
+			</div>
+
+		</form>
+		<ul class="nav menu">
+			<li><a href="/admin"><span class="glyphicon glyphicon-dashboard"></span>仪表盘</a></li>
+			<li><a href="/admin/img_file_manage"><span class="glyphicon glyphicon-pencil"></span>图片上传</a></li>
+			<!--<li><a href="/admin/widgets"><span class="glyphicon glyphicon-th"></span>插件</a></li>-->
+			<!--<li><a href="/admin/charts"><span class="glyphicon glyphicon-stats"></span>图表</a></li>-->
+            <li class="parent">
+				<a data-toggle="collapse" href="#sub-item-settings">
+					<span class="glyphicon glyphicon-cog"></span><strong>设置</strong>
+					<span class="icon pull-right">
+						<em class="glyphicon glyphicon-s glyphicon-chevron-down"></em>
+					</span>
+				</a>
+				<ul class="children collapse in" id="sub-item-settings">
+					{% for tableurl, table_name in tables_name['settings'] %}
+					<li>
+						<a class="" href="/admin/tables/{{tableurl}}">
+							<span class="glyphicon glyphicon-chevron-right"></span>{{table_name}}
+						</a>
+					</li>
+					{% endfor %}
+				</ul>
+			</li>
+            <li class="parent">
+				<a data-toggle="collapse" href="#sub-item-others">
+					<span class="glyphicon glyphicon-list"></span><strong>表格</strong>
+					<span class="icon pull-right">
+						<em class="glyphicon glyphicon-s glyphicon-chevron-down"></em>
+					</span>
+				</a>
+				<ul class="children collapse in" id="sub-item-others">
+					{% for tableurl, table_name in tables_name['others'] %}
+					<li>
+						<a class="" href="/admin/tables/{{tableurl}}">
+							<span class="glyphicon glyphicon-chevron-right"></span>{{table_name}}
+						</a>
+					</li>
+					{% endfor %}
+                    <!--评论部分-->
+					<li class="parent">
+						<a data-toggle="collapse" href="#sub-item-comment">
+							<span class="glyphicon glyphicon-th-list"></span><strong>评论</strong>
+							<span class="icon pull-right">
+								<em class="glyphicon glyphicon-s glyphicon-chevron-down"></em>
+							</span>
+						</a>
+						<ul class="children collapse" id="sub-item-comment">
+							{% for tableurl, table_name in tables_name['comments'] %}
+							<li>
+								<a class="" href="/admin/tables/{{tableurl}}">
+									<span class="glyphicon glyphicon-comment"></span>{{table_name}}
+								</a>
+							</li>
+							{% endfor %}
+						</ul>
+					</li>
+                    <!--举报部分-->
+                    <li class="parent">
+						<a data-toggle="collapse" href="#sub-item-report">
+							<span class="glyphicon glyphicon-th-list"></span><strong>举报</strong>
+							<span class="icon pull-right">
+								<em class="glyphicon glyphicon-s glyphicon-chevron-down"></em>
+							</span>
+						</a>
+						<ul class="children collapse" id="sub-item-report">
+							{% for tableurl, table_name in tables_name['reports'] %}
+							<li>
+								<a class="" href="/admin/tables/{{tableurl}}">
+									<span class="glyphicon glyphicon-exclamation-sign"></span>{{table_name}}
+								</a>
+							</li>
+							{% endfor %}
+						</ul>
+					</li>
+				</ul>
+			</li>
+
+			<!--<li><a href="/admin/panels"><span class="glyphicon glyphicon-info-sign"></span> Alerts &amp; Panels</a></li>-->
+
+
+			<li role="presentation" class="divider"></li>
+			<li><a href="/admin/login"><span class="glyphicon glyphicon-user"></span> 登录页面</a></li>
+		</ul>
+	</div><!--/.sidebar-->
+
+	<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">
+		<div class="row">
+			<ol class="breadcrumb">
+				<li><a href="/admin"><span class="glyphicon glyphicon-home"></span></a></li>
+				<li class="active">{{module_name}}</li>
+			</ol>
+		</div><!--/.row-->
+		<!--<div class="row">-->
+			<!--<div class="col-lg-12">-->
+				<!--<h1 class="page-header">{{module_name}}</h1>-->
+			<!--</div>-->
+		<!--</div>&lt;!&ndash;/.row&ndash;&gt;-->
+
+        {% block content %}
+        {% endblock %}
+	</div>	<!--/.main-->
+	<div id="search-modal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content-sb">
+				<!--
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title"></h4>
+                </div>
+
+                <div class="modal-body">
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+                -->
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+	<script src="{{ url_for('static', filename='admin/js/jquery-1.11.1.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='admin/js/bootstrap.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='admin/js/chart.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='admin/js/chart-data.js') }}"></script>
+	<script src="{{ url_for('static', filename='admin/js/easypiechart.js') }}"></script>
+	<script src="{{ url_for('static', filename='admin/js/easypiechart-data.js') }}"></script>
+	<script src="{{ url_for('static', filename='admin/js/bootstrap-datepicker.js') }}"></script>
+	<script src="{{ url_for('static', filename='admin/js/bootstrap-table.js') }}"></script>
+	<script>
+		$('#calendar').datepicker({
+		});
+
+		!function ($) {
+		    $(document).on("click","ul.nav li.parent > a > span.icon", function(){
+		        $(this).find('em:first').toggleClass("glyphicon-minus");
+		    });
+		    $(".sidebar span.icon").find('em:first').addClass("glyphicon-plus");
+		}(window.jQuery);
+
+		$(window).on('resize', function () {
+		  if ($(window).width() > 768) $('#sidebar-collapse').collapse('show')
+		})
+		$(window).on('resize', function () {
+		  if ($(window).width() <= 767) $('#sidebar-collapse').collapse('hide')
+		})
+		var $search_modal = $('#search-modal').modal({show: false});
+		$("#search").submit(function (event) {
+			event.preventDefault();
+			$form = event.target;
+			filename = $("#search-input").val();
+			$search_modal.modal('show');
+			$("#search-modal .modal-content-sb").html("<img src=\"/api/image/"+ filename + "\">");
+		});
+	</script>
+    {% block extraJS %}
+    {% endblock %}
+</body>
+
+</html>

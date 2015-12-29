@@ -1,0 +1,333 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+		<div class="row" style="margin-top:10px">
+			<div class="col-lg-12">
+				<div class="panel panel-primary">
+                    <div class="panel-heading dark-overlay">{{module_name}}</div>
+                        <span class="toolbar"><a class="create btn btn-default" href="javascript:">增加</a>
+                        <span class="alert"></span>
+                        </span>
+
+					<div class="panel-body">
+						<table
+                            id="table"
+							data-toggle="table"
+							data-show-toggle="true"
+							data-show-columns="true"
+							data-search="true"
+							data-pagination="true"
+                            data-detail-view="true"
+							data-sort-name="id"
+							data-sort-order="desc"
+                            data-toolbar=".toolbar">
+						    <thead>
+						    <tr>
+                                {% if table_data_keys %}
+                                    <th data-field="action"
+                                        data-align="center"
+                                        data-halign="center"
+                                        data-formatter="actionFormatter"
+                                        data-events="actionEvents">操作
+                                    </th>
+                                    {% for key in table_data_keys %}
+                                        <th data-field="{{key}}"
+                                            data-sortable="true"
+                                            data-align="center">{{key}}
+                                        </th>
+                                    {% endfor %}
+
+                                {% endif %}
+                            </tr>
+						    </thead>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div><!--/.row-->
+
+    <div id="modal_create" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal_create-title">增加</h4>
+                </div>
+                <div class="modal-body">
+                    {% if table_new_data_keys %}
+                        {% for key in table_new_data_keys %}
+                            {% if key == "content" %}
+                            <div class="form-group">
+                                <label>{{key}}</label>
+                                <textarea type="text" rows="10" class="form-control" name="{{key}}" placeholder="{{key}}"></textarea>
+                            </div>
+                            {% else %}
+                            <div class="form-group">
+                                <label>{{key}}</label>
+                                <input type="text" class="form-control" name="{{key}}" placeholder="{{key}}">
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary submit">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div id="modal_update" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal_update-title">修改</h4>
+                </div>
+                <div class="modal-body">
+                    {% if table_data_keys %}
+                        {% for key in table_data_keys %}
+                            {% if key == "content" %}
+                            <div class="form-group">
+                                <label>{{key}}</label>
+                                <textarea type="text" rows="10" class="form-control" name="{{key}}" placeholder="{{key}}"></textarea>
+                            </div>
+                            {% else %}
+                            <div class="form-group">
+                                <label>{{key}}</label>
+                                <input type="text" class="form-control" name="{{key}}" placeholder="{{key}}">
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary submit">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+{% endblock %}
+
+
+{% block extraJS %}
+<script>
+
+        var API_URL = location.pathname;
+        var table_data = {{ table_data_str|safe }};
+        var $modal_update = $('#modal_update').modal({show: false});
+        var $modal_create = $('#modal_create').modal({show: false});
+        var $alert = $('.alert').hide();
+
+        // 此处遍历数据 转换其中的object
+        for (var j = 0; j < table_data.length; j++) {
+            var row_data = table_data[j];
+            var keys = Object.keys(row_data)
+            // 将object里的object转为str
+            for (var i = 0; i < keys.length; i++ ) {
+                var key = keys[i];
+                if (typeof(row_data[key]) == 'object') {
+                    table_data[j][key] = JSON.stringify(row_data[key]);
+                }
+            }
+        }
+        adjustBtn = function() {
+            // 加载完成后，根据不同页面显示不同按钮
+            {% if not btn_control['update_btn'] %}
+                $(".update").hide();
+            {% endif %}
+            {% if not btn_control['delete_btn'] %}
+                $(".remove").hide();
+            {% endif %}
+            {% if not btn_control['create_btn'] %}
+                $(".create").hide();
+            {% endif %}
+            {% if not btn_control['show_img_btn'] %}
+                $(".show-img").hide();
+            {% endif %}
+            {% if not btn_control['ban_user_btn'] %}
+                $(".ban-user").hide();
+            {% endif %}
+            {% if not btn_control['show_or_hide_channel_btn'] %}
+                $(".show_or_hide_channel").hide();
+            {% endif %}
+        };
+        $(document).ready(function(){
+            var $table = $('#table').bootstrapTable('load', table_data);
+            adjustBtn();
+        })
+
+
+        $(function () {
+
+        // 新建一行
+        $('.create').click(function () {
+            showCreateModal($(this).text());
+        });
+
+        $modal_create.find('.submit').click(function () {
+            var row = {};
+
+            $modal_create.find('input[name]').each(function () {
+                row[$(this).attr('name')] = $(this).val();
+            });
+
+            $modal_create.find('textarea[name]').each(function () {
+                row[$(this).attr('name')] = $(this).val();
+            });
+
+            $.ajax({
+                url: API_URL,
+                type: 'post',
+                contentType: 'application/json',
+                data: JSON.stringify(row),
+                success: function () {
+                    $modal_create.modal('hide');
+                    //$table.bootstrapTable('refresh');
+                    showAlert('创建成功!', 'success');
+                    location.reload();
+                },
+                error: function () {
+                    $modal_create.modal('hide');
+                    showAlert('创建失败!', 'danger');
+                }
+            });
+        });
+
+        $modal_update.find('.submit').click(function () {
+            var row = {};
+            $modal_update.find('input[name]').each(function () {
+                row[$(this).attr('name')] = $(this).val();
+            });
+            $modal_update.find('textarea[name]').each(function () {
+                row[$(this).attr('name')] = $(this).val();
+            });
+
+            var update_id = '/'+$modal_update.data('id');
+            $.ajax({
+                url: API_URL + update_id,
+                type: 'put',
+                contentType: 'application/json',
+                data: JSON.stringify(row),
+                success: function () {
+                    $modal_update.modal('hide');
+                    showAlert('修改成功!', 'success');
+                    location.reload();
+                },
+                error: function () {
+                    $modal_update.modal('hide');
+                    showAlert('修改失败!', 'danger');
+                }
+            });
+        });
+
+    });
+
+    // 操作中的各种按钮
+    function actionFormatter(value) {
+        console.log(value);
+        return [
+            '<a class="update btn btn-info" href="javascript:" title="修改"><i class="glyphicon glyphicon-edit"></i>修改</a>',
+            '<a class="remove btn btn-danger" href="javascript:" title="删除"><i class="glyphicon glyphicon-remove-circle"></i>删除</a>',
+            '<a class="show-img btn btn-primary" href="javascript:" title="查看图片">查看图片</a>',
+            '<a class="ban-user btn btn-danger" href="javascript:" title="列入/解除黑名单"><i class="glyphicon glyphicon-ban-circle"></i>列入/解除黑名单</a>',
+            '<a class="show_or_hide_channel btn btn-danger" href="javascript:" title="显示/隐藏">显示/隐藏</a>',
+        ].join('');
+    }
+
+    // 按钮事件
+    window.actionEvents = {
+        'click .update': function (e, value, row) {
+            showUpdateModal($(this).attr('title'), row);
+        },
+        'click .remove': function (e, value, row) {
+            if (confirm('确认删除吗?')) {
+                $.ajax({
+                    url: API_URL + '/' + row.id,
+                    type: 'delete',
+                    success: function () {
+                        showAlert('删除成功!', 'success');
+                        location.reload();
+                    },
+                    error: function () {
+                        showAlert('删除失败!', 'danger');
+                    }
+                })
+            }
+        },
+        'click .show-img': function (e, value, row) {
+            filename = row.picture_filename || row.icon_filename || row.avatar || row.cover_file_name || row.filename || row.logo_file_name || row.coupon_file_name || row.image_file_name;
+            if (filename) {
+                $search_modal.modal('show');
+    			$("#search-modal .modal-content-sb").html("<img src=\"/api/image/"+ filename + "\">");
+    		}
+        },
+        'click .ban-user': function (e, value, row) {
+            if (confirm('确认把用户列入/解除黑名单吗?')) {
+                $.ajax({
+                    url: '/admin/ban_user/' + row.id,
+                    type: 'delete',
+                    success: function () {
+                        showAlert('列入/解除黑名单成功!', 'success');
+                        location.reload();
+                    },
+                    error: function () {
+                        showAlert('列入/解除黑名单失败!', 'danger');
+                    }
+                })
+            }
+        },
+        'click .show_or_hide_channel': function (e, value, row) {
+            if (confirm('确认隐藏/显示该频道吗?')) {
+                $.ajax({
+                    url: '/admin/show_or_hide_channel/' + row.id,
+                    type: 'post',
+                    success: function () {
+                        showAlert('隐藏/显示频道成功!', 'success');
+                        location.reload();
+                    },
+                    error: function () {
+                        showAlert('隐藏/显示频道失败!', 'danger');
+                    }
+                })
+            }
+        },
+    };
+
+    function showCreateModal(title, row) {
+        var row = row || {}; // default row value
+
+        $modal_create.data('id', row.id);
+
+        for (var name in row) {
+            $modal_create.find('input[name="' + name + '"]').val(row[name]);
+            $modal_create.find('textarea[name="' + name + '"]').val(row[name]);
+        }
+        $modal_create.modal('show');
+    }
+
+    function showUpdateModal(title, row) {
+        var row = row || {}; // default row value
+
+        $modal_update.data('id', row.id);
+
+        for (var name in row) {
+            $modal_update.find('input[name="' + name + '"]').val(row[name]);
+            $modal_update.find('textarea[name="' + name + '"]').val(row[name]);
+        }
+        $modal_update.modal('show');
+    }
+
+    // 弹出提示
+    function showAlert(title, type) {
+        $alert.attr('class', 'alert alert-' + type || 'success')
+              .html('<i class="glyphicon glyphicon-check"></i> ' + title).show();
+        setTimeout(function () {
+            $alert.hide();
+        }, 3000);
+    }
+</script>
+{% endblock %}

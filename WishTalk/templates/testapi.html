@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <meta charset="utf-8">
+    <script type="text/javascript">
+        function AjaxClass()  
+        {  
+            var XmlHttp = false;  
+            try  
+            {  
+                XmlHttp = new XMLHttpRequest();        //FireFox专有  
+            }  
+            catch(e)  
+            {  
+                try  
+                {  
+                    XmlHttp = new ActiveXObject("MSXML2.XMLHTTP");  
+                }  
+                catch(e2)  
+                {  
+                    try  
+                    {  
+                        XmlHttp = new ActiveXObject("Microsoft.XMLHTTP");  
+                    }
+                    catch(e3)
+                    {
+                        alert("你的浏览器不支持XMLHTTP对象，请升级到IE6以上版本！");  
+                        XmlHttp = false;
+                    }
+                }
+            }
+
+            var me = this;
+            this.Method = "POST";
+            this.Url = "";
+            this.Async = true;
+            this.Arg = "";
+            this.CallBack = function(){};  
+            this.Loading = function(){};  
+            this.Send = function()
+            {
+                if (this.Url=="")  
+                {  
+                    return false;  
+                }
+                if (!XmlHttp)  
+                {  
+                    return IframePost();  
+                }
+                
+                if (this.Method=="GET")
+                {
+                    this.Arg = $("#input-data").serialize();
+                    if (this.Arg.length > 0) {
+                        XmlHttp.open (this.Method, this.Url+"?"+this.Arg, this.Async);
+                    }
+                    else
+                    {
+                        XmlHttp.open (this.Method, this.Url, this.Async); 
+                    }
+                }
+                else 
+                {
+                    XmlHttp.open (this.Method, this.Url, this.Async);  
+                    XmlHttp.setRequestHeader("Content-Type","application/json;charset=UTF-8");
+                }
+
+                XmlHttp.onreadystatechange = function()  
+                {  
+                    if (XmlHttp.readyState==4)  
+                    {  
+                        var Result = false;  
+                            Result = XmlHttp.responseText;  
+                        XmlHttp = null;  
+                          
+                        me.CallBack(Result);  
+                    }  
+                     else  
+                     {  
+                        me.Loading();  
+                     }  
+                }
+
+                if (this.Method=="GET")
+                {
+                    XmlHttp.send(null);
+                }
+                else
+                {
+                    XmlHttp.send(this.Arg);
+                }
+
+            }  
+              
+            //Iframe方式提交  
+            function IframePost()  
+            {  
+                var Num = 0;  
+                var obj = document.createElement("iframe");  
+                obj.attachEvent("onload",function(){ me.CallBack(obj.contentWindow.document.body.innerHTML); obj.removeNode() });  
+                obj.attachEvent("onreadystatechange",function(){ if (Num>=5) {alert(false);obj.removeNode()} });  
+                obj.src = me.Url;  
+                obj.style.display = 'none';  
+                document.body.appendChild(obj);  
+            }  
+        }  
+          
+        function sendajax() {
+            var Ajax = new AjaxClass();         // 创建AJAX对象  
+            Ajax.Method = document.getElementById("method").value;
+            var ex_url = document.getElementById("ex_url").value;
+            // 有额外的ID的情况下
+            if (ex_url.length > 0)
+            {
+                Ajax.Url = document.getElementById("url").value+'/'+ex_url;
+            }
+            else
+            {
+                Ajax.Url = document.getElementById("url").value;
+            }
+
+            Ajax.Async = true;                  // 是否异步  
+            Ajax.Arg = document.getElementById("data").value;
+            Ajax.Loading = function() {          //等待函数  
+                document.getElementById("response").innerHTML = "";
+            };
+            Ajax.CallBack = function(str)       // 回调函数  
+            {  
+                document.getElementById("response").innerHTML = str;
+            };
+            Ajax.Send();                        // 发送请求  
+        }
+
+
+    </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/amazeui.min.css') }}"/>
+  <style>
+      .hidden {
+        display:none;
+      }
+  </style>
+</head>
+<body class=" am-u-lg-8 am-u-md-12 am-u-sm-centered am-g am-form am-animation-slide-top">
+
+    <div data-am-widget="titlebar" class="am-titlebar am-titlebar-default" >
+        <h2 class="am-titlebar-title ">
+            木盟API
+        </h2>
+    </div>
+
+    <!--<p>请求的URL: <input id="url" size="100" /></p>-->
+    <hr>
+    <p>请求的URL:
+        <select data-am-selected="{btnStyle: 'secondary', searchBox: 1}" id="url">
+            <option disabled>=====用户部分=====</option>
+            <option value ="user/checkcode">user/checkcode</option>
+            <option value ="user/forget_checkcode">user/forget_checkcode</option>
+            <option value ="user">user</option>
+            <option value ="user/password_reset">user/password_reset</option>
+            <option value ="session">session</option>
+            <option disabled>=====爆料部分=====</option>
+            <option value="secret">secret</option>
+            <option value="secret/like">secret/like</option>
+            <option value="secret/collect">secret/collect</option>
+            <option value="secret/comment">secret/comment</option>
+            <option value="secret_comment/like">secret_comment/like</option>
+            <option value="secret/report">secret/report</option>
+        </select>
+        <input class="am-input" type="text" style="display:inline-block;width:90px" size="2" id="ex_url" placeholder='额外的ID'/><span>若填写,自动在此前加/</span>
+    </p>
+    <p class="am-text-primary" id="realURL"></p>
+    <p>请求方式:
+        <select data-am-selected id="method">
+            <option value ="GET">GET</option>
+            <option value ="POST">POST</option>
+            <option value ="PUT">PUT</option>
+            <option id="method-delete" value="DELETE">DELETE</option>
+        </select>
+    </p>
+
+    <hr data-am-widget="divider" style="" class="am-divider am-divider-default" />
+
+    <form id="input-data">
+        <table id="data-table" class="am-table am-table-bordered am-table-radius am-table-striped">
+           <tr>
+                <th style="text-align:center">名称</th><th style="text-align:center">值</th>
+           </tr>
+        </table>
+    </form>
+    <button  type="button" class="am-btn am-btn-primary" onclick="createData();">生成提交数据</button>
+
+    <p>
+        提交的数据:
+        <textarea  class="am-input" type="text" id="data" placeholder='格式(POST,PUT,DELETE)：{"a":"1", "b":"2"}  格式(GET):a=1&b=2'></textarea>
+    </p>
+    <button  type="button" class="am-btn am-btn-success" onclick="sendajax();">提交</button>
+    <br><br>
+    <hr>
+    <h2>返回：</h2>
+    <div class="am-g error-log">
+        <pre id="response"></pre>
+    </div>
+
+<!-- 弹出的提示框 -->
+<div class="am-modal am-modal-no-btn" tabindex="-1" id="alert-msg">
+  <div class="am-modal-dialog">
+    <div class="am-modal-hd" id="alet-msg-content">这个方法没有实现:)
+      <a href="javascript: void(0)" class="am-close am-close-spin" data-am-modal-close>&times;</a>
+    </div>
+  </div>
+</div>
+
+
+</body>
+<!--[if (gte IE 9)|!(IE)]><!-->
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<!--<![endif]-->
+<script src="{{ url_for('static', filename='js/amazeui.min.js') }}"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+
+    // 将表格中的数据变成json字符串
+    formToJsonStr = function(formObj) {
+       var o = {};
+       var a = formObj.serializeArray();
+       $.each(a, function() {
+           if(this.value){
+               if (o[this.name]) {
+                   if (!o[this.name].push) {
+                       o[this.name]=[ o[this.name] ];
+                   }
+                       o[this.name].push(this.value || null);
+               } else {
+                       o[this.name]=this.value || null;
+               }
+           }
+       });
+       return JSON.stringify(o);
+    };
+
+    // 将数据变成json字符串然后放入输入框中
+    createData = function() {
+        var f = $("#input-data")
+        if ($("#method").val() == "GET")
+        {
+            $("#data").val(f.serialize());
+        }
+        else
+        {
+            var jsonStr = formToJsonStr(f);
+            $("#data").val(jsonStr);
+        }
+
+    };
+
+    // 生成url并显示
+    adjustURL = function() {
+        var url = $("#url").val();
+        var exurl = $("#ex_url").val();
+        var method = $("#method").val();
+        if (exurl != "") {
+            $("#realURL").text(method+": "+'/'+url+'/'+exurl);
+        } else {
+            $("#realURL").text(method+": "+'/'+url);
+        }
+    };
+
+    var getOption = $($('.am-selected-list > li:nth-child(1)')[1]);
+    var postOption = $($('.am-selected-list > li:nth-child(2)')[1]);
+    var putOption = $($('.am-selected-list > li:nth-child(3)')[1]);
+    var deleteOption = $($('.am-selected-list > li:nth-child(4)')[1]);
+
+    hideGet = function() {
+        getOption.addClass('hidden');
+    };
+    hidePost = function() {
+        postOption.addClass('hidden');
+    };
+    hidePut = function() {
+        putOption.addClass('hidden');
+    };
+    hideDelete = function() {
+        deleteOption.addClass('hidden');
+    };
+
+    showAllMethod = function() {
+        getOption.removeClass('hidden');
+        postOption.removeClass('hidden');
+        putOption.removeClass('hidden');
+        deleteOption.removeClass('hidden');
+    };
+
+    // 增加一行
+    addCol = function(key) {
+        var newcol = document.createElement("tr");
+        var newk = document.createElement("td");
+        var newv = document.createElement("td");
+        var newvinput = document.createElement("input");
+        $(newv).attr("style","padding:0");
+        $(newk).attr("style","text-align:center");
+        $(newvinput).attr("style","text-align:center");
+        $(newvinput).attr("class","am-input value").attr("name",key).attr("type","text")
+        $(newk).html(key);
+        $(newv).append(newvinput);
+        $(newcol).addClass("kv");
+        $(newcol).append(newk);
+        $(newcol).append(newv);
+        $("#data-table").append(newcol);
+    };
+
+    // 方法不存在时弹出框
+    methodNotExist = function() {
+        var $modal = $('#alert-msg');
+        $modal.modal();
+    };
+
+    // 根据请求url调整方法
+    adjustRequestMethod = function(){
+
+        var url = $("#url").val();
+        var exurl = $("#ex_url").val();
+        var method = $("#method").val();
+
+        // 清除已有项
+        $(".kv").remove();
+
+        // 显示所有方法
+        showAllMethod();
+
+        // 加入新的项
+        if (url == "user/checkcode") {
+            hideGet();
+            hidePut();
+            hideDelete();
+            if (method == "GET") {
+                methodNotExist();
+            }
+            if (method == "POST") {
+                addCol("phone");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                methodNotExist();
+            }
+        }
+        else if (url == "user/forget_checkcode") {
+            hideGet();
+            hidePut();
+            hideDelete();
+            if (method == "GET") {
+                methodNotExist();
+            }
+            if (method == "POST") {
+                addCol("phone");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                methodNotExist();
+            }
+        }
+        else if (url == "user") {
+            hideDelete();
+            if (method == "GET") {
+                addCol("token");
+            }
+            if (method == "POST") {
+                addCol("username");
+                addCol("password");
+                addCol("nickname");
+                addCol("avatar");
+            }
+            if (method == "PUT") {
+                addCol("token");
+                addCol("password");
+                addCol("nickname");
+                addCol("gender");
+                addCol("birthday");
+                addCol("grade");
+                addCol("school");
+                addCol("receiver");
+                addCol("contact");
+                addCol("address");
+                addCol("avatar");
+            }
+            if (method == "DELETE") {
+                methodNotExist();
+            }
+        }
+        else if (url == "user/password_reset") {
+            hideGet();
+            hidePut();
+            hideDelete();
+            if (method == "GET") {
+                methodNotExist();
+            }
+            if (method == "POST") {
+                addCol("username");
+                addCol("checkcode");
+                addCol("new_password");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                methodNotExist();
+            }
+        }
+        else if (url == "session") {
+            hideGet();
+            hidePut();
+            if (method == "GET") {
+                methodNotExist();
+            }
+            if (method == "POST") {
+                addCol("username");
+                addCol("password");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                addCol("token");
+            }
+        }
+        else if (url == "user/post") {
+            hidePost();
+            hidePut();
+            hideDelete();
+            if (method == "GET") {
+                addCol("token")
+            }
+            if (method == "POST") {
+                methodNotExist();
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                methodNotExist();
+            }
+        }
+        else if (url == "user/comment") {
+            hidePost();
+            hidePut();
+            hideDelete();
+            if (method == "GET") {
+                addCol("token")
+            }
+            if (method == "POST") {
+                methodNotExist();
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                methodNotExist();
+            }
+        }
+        else if (url == "user/collection") {
+            hidePost();
+            hidePut();
+            hideDelete();
+            if (method == "GET") {
+                addCol("token")
+            }
+            if (method == "POST") {
+                methodNotExist();
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                methodNotExist();
+            }
+        }
+        else if (url == "secret") {
+            hidePut();
+            if (method == "GET") {
+                addCol("token");
+                addCol("limit");
+                addCol("offset");
+                addCol("order_by");
+            }
+            if (method == "POST") {
+                addCol("token");
+                addCol("topic");
+                addCol("content");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                addCol("token");
+            }
+        }
+        else if (url == "secret/like") {
+            hideGet();
+            hidePut();
+            if (method == "GET") {
+                methodNotExist();
+            }
+            if (method == "POST") {
+                addCol("token");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                addCol("token");
+            }
+        }
+        else if (url == "secret/collect") {
+            hidePut();
+            if (method == "GET") {
+                addCol("token");
+                addCol("limit");
+                addCol("offset");
+            }
+            if (method == "POST") {
+                addCol("token");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                addCol("token");
+            }
+        }
+        else if (url == "secret/comment") {
+            hidePut();
+            if (method == "GET") {
+                addCol("token");
+                addCol("limit");
+                addCol("offset");
+            }
+            if (method == "POST") {
+                addCol("token");
+                addCol("content");
+                addCol("at_user_id");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                addCol("token");
+            }
+        }
+        else if (url == "secret_comment/like") {
+            hideGet();
+            hidePut();
+            if (method == "GET") {
+                methodNotExist();
+            }
+            if (method == "POST") {
+                addCol("token");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                addCol("token");
+            }
+        }
+        else if (url == "secret/report") {
+            hideGet();
+            hidePut();
+            hideDelete();
+            if (method == "GET") {
+                methodNotExist();
+            }
+            if (method == "POST") {
+                addCol("token");
+                addCol("content");
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                methodNotExist();
+            }
+        }
+        };
+
+    $("#method,#url").change(function(){
+    adjustRequestMethod();
+    adjustURL();}
+    );
+    $("#ex_url").keyup(adjustURL);
+
+    adjustRequestMethod();
+    adjustURL();
+
+    });
+
+
+</script>
+</html>
