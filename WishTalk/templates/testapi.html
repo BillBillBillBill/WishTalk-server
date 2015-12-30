@@ -476,7 +476,6 @@
             }
         }
         else if (url == "wish") {
-            hidePut();
             if (method == "GET") {
                 addCol("token");
                 addCol("limit");
@@ -491,7 +490,8 @@
                 addCol("content");
             }
             if (method == "PUT") {
-                methodNotExist();
+                addCol("token");
+                addCol("action");
             }
             if (method == "DELETE") {
                 addCol("token");

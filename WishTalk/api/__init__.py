@@ -12,8 +12,6 @@ ERROR_WISH          = 2000
 ERROR_ONE_PICTURE   = 3000
 ERROR_LIKE          = 4000
 ERROR_COMMENT       = 5000
-ERROR_REPORT        = 6000
-ERROR_COLLECT       = 7000
 
 
 class GlobalError():

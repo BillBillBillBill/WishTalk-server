@@ -15,6 +15,7 @@ GET  /wish                      #获取所有愿望，可选参数limit,offset,o
 GET  /wish/<int:wish_id>        #获取特定id的愿望
 POST /wish                      #发表愿望
 DELETE  /wish/<int:wish_id>     #删除特定id的愿望
+PUT  /wish/<int:wish_id>        #对特定id的愿望进行操作 参数为action
 
 POST /wish/like/<int:wish_id>   #对特定id的愿望点赞
 DELETE /wish/like/<int:wish_id> #对特定id取消点赞
@@ -42,7 +43,18 @@ class WishError():
         'err': ERROR_WISH + 3,
         'msg': 'Wish Has Liked'
     }
-
+    ACTION_NOT_ALLOW = {
+        'err': ERROR_WISH + 4,
+        'msg': 'Action Not Allow'
+    }
+    WISH_STATUS_WRONG = {
+        'err': ERROR_WISH + 5,
+        'msg': 'Wish Status Wrong'
+    }
+    SELF_TAKING_ERROR = {
+        'err': ERROR_WISH + 6,
+        'msg': 'Self Taking Error'
+    }
 
 
 @api.route('/wish', methods=["GET"])
@@ -114,6 +126,72 @@ def create_wish(current_user):
         db.session.rollback()
         print str(e)
         return jsonError(WishError.UnKnown), 403
+
+
+
+@api.route('/wish/<int:wish_id>', methods=["PUT"])
+@token_required
+def action_on_wish(current_user, wish_id=None):
+    try:
+        if not wish_id:
+            return jsonError(GlobalError.INVALID_ARGUMENTS), 403
+
+        allow_actions = ["take", "giveup", "finish", "close"]
+        action = request.json.get("action", "")
+
+        if action not in allow_actions:
+            return jsonError(WishError.ACTION_NOT_ALLOW), 403
+
+        wish = Wish.query.get(wish_id)
+        if not wish:
+            return jsonError(WishError.WISH_NOT_EXIST), 404
+
+        if action == "take" or action == "giveup":
+            if wish.owner_id == current_user.id:
+                return jsonError(GlobalError.PERMISSION_DENIED), 403
+
+            if action == "take":
+                if wish.status != "unfinished":
+                    return jsonError(WishError.WISH_STATUS_WRONG), 403
+                else:
+                    wish.status = "finishing"
+                    wish.helper_id = current_user.id
+                    db.session.commit()
+                    return jsonSuccess({'msg': 'Take wish success'}), 200
+
+            if action == "giveup":
+                if wish.helper_id != current_user.id:
+                    return jsonError(GlobalError.PERMISSION_DENIED), 403
+                if wish.status != "finishing":
+                    return jsonError(WishError.WISH_STATUS_WRONG), 403
+                else:
+                    wish.status = "unfinished"
+                    wish.helper_id = None
+                    db.session.commit()
+                    return jsonSuccess({'msg': 'Giveup wish success'}), 200
+
+        if action == "finish" or action == "close":
+            if wish.owner_id != current_user.id:
+                return jsonError(GlobalError.PERMISSION_DENIED), 403
+
+            if action == "finish":
+                if wish.status != "finishing":
+                    return jsonError(WishError.WISH_STATUS_WRONG), 403
+                else:
+                    wish.status = "finished"
+                    db.session.commit()
+                    return jsonSuccess({'msg': 'Finish wish success'}), 200
+
+            if action == "close":
+                wish.status = "closed"
+                wish.helper_id = None
+                db.session.commit()
+                return jsonSuccess({'msg': 'Close wish success'}), 200
+
+    except Exception, e:
+        print e
+        db.session.rollback()
+        return jsonError(GlobalError.UNDEFINED_ERROR), 403
 
 @api.route('/wish/<int:wish_id>', methods=["DELETE"])
 @token_required

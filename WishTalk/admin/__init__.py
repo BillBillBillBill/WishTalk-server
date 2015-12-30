@@ -3,7 +3,7 @@ from flask import render_template
 from flask import Blueprint
 from flask import request
 from server import db
-from dashboard import get_users_count, get_image_count
+from dashboard import get_users_count, get_image_count, get_wish_count, get_wish_comment_count
 from model import *
 import json
 import inspect
@@ -74,7 +74,9 @@ def render_index():
         module_name=u'仪表盘',
         tables_name=ALLOW_TABLE_MAP,
         users_count=get_users_count(),
-        image_count=get_image_count()
+        image_count=get_image_count(),
+        wish_count=get_wish_count(),
+        wish_comment_count=get_wish_comment_count(),
     )
 
 
