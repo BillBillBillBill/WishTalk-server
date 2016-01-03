@@ -7,7 +7,7 @@ def send_sms_checkcode(phone, code):
 
     req.sms_type = "normal"
     req.sms_free_sign_name = "注册验证"
-    req.sms_param = "{\"code\":\"%s\",\"product\":\"木盟校园\"}" % str(code)
+    req.sms_param = "{\"code\":\"%s\",\"product\":\"心愿说\"}" % str(code)
     req.rec_num = str(phone)
     req.sms_template_code = "SMS_3055518"
     try:
@@ -27,7 +27,7 @@ def send_sms_forget_code(phone, code):
 
     req.sms_type = "normal"
     req.sms_free_sign_name = "身份验证"
-    req.sms_param = "{\"code\":\"%s\",\"product\":\"木盟校园\"}" % str(code)
+    req.sms_param = "{\"code\":\"%s\",\"product\":\"心愿说\"}" % str(code)
     req.rec_num = str(phone)
     req.sms_template_code = "SMS_3055516"
     try:
