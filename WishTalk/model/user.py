@@ -36,25 +36,16 @@ class UserInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     gender = db.Column(db.String(10))
-    birthday = db.Column(db.String(20))
     grade = db.Column(db.String(10))
     school = db.Column(db.String(100))
 
-    receiver = db.Column(db.String(30))    #收货人
-    contact = db.Column(db.String(30))     #联系电话
-    address = db.Column(db.String(300))    #送货地址
-
     user = db.relationship('User', backref=db.backref('user_info', lazy='dynamic'))
 
-    def __init__(self, user_id, gender='', birthday='', grade='', school='', receiver='', contact='', address=''):
+    def __init__(self, user_id, gender='', grade='', school=''):
         self.user_id = int(user_id)
         self.gender = ''
-        self.birthday = ''
         self.grade = ''
         self.school = ''
-        self.receiver = ''
-        self.contact = ''
-        self.address = ''
 
     def __repr__(self):
         return '<UserInfo user_id: %r>' % (self.user_id)
@@ -66,12 +57,8 @@ class UserInfo(db.Model):
             'username': self.user.username,
             'nickname': self.user.nickname,
             'gender': self.gender,
-            'birthday': self.birthday,
             'grade': self.grade,
             'school': self.school,
-            'receiver': self.receiver,
-            'contact': self.contact,
-            'address': self.address,
             'avatar': self.user.avatar,
             'is_blocked': self.user.is_blocked
         }
@@ -79,12 +66,8 @@ class UserInfo(db.Model):
     def get_update_dict(self, kwargs):
         updateDict = {
             'gender': self.gender,
-            'birthday': self.birthday,
             'grade': self.grade,
             'school': self.school,
-            'receiver': self.receiver,
-            'contact': self.contact,
-            'address': self.address,
         }
         for k, v in updateDict.items():
             if kwargs.get(k):
