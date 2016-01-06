@@ -268,13 +268,14 @@ def user_register():
         username = request.json.get('username', '')
         password = request.json.get('password', '')
         nickname = request.json.get('nickname', '')
+        checkcode = request.json.get('checkcode', '')
         avatar = request.json.get('avatar', '')
         if not username and not password:
             return jsonError(UserError.FORM_DATA_INVALID), 400
         user = User.query.filter(User.username == username).first()
         if user:
             return jsonError(UserError.USERNAME_HAS_EXISTED), 403
-        if redisClient.get("checkcode:" + username) != password:
+        if redisClient.get("checkcode:" + username) != checkcode:
             return jsonError(UserError.CHECKCODE_ERROR), 403
         ret = register(username, password, nickname, avatar)
         if ret:
