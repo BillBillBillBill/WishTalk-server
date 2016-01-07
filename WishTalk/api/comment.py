@@ -47,7 +47,6 @@ def get_comment(current_user, resource_name=None, target_id=None):
     ret = []
     for comment in comments:
         cd = comment.to_dict()
-        cd['has_like'] = (comment.likers.filter_by(user_id=current_user.id).first() is not None) if current_user else False
         ret.append(cd)
     #print ret
     return jsonSuccess(ret), 200
