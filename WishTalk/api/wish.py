@@ -176,13 +176,14 @@ def action_on_wish(current_user, wish_id=None):
                 return jsonError(GlobalError.PERMISSION_DENIED), 403
 
             if action == "finish":
-                if wish.status != "finishing":
-                    return jsonError(WishError.WISH_STATUS_WRONG), 403
-                else:
-                    wish.status = "finished"
-                    wish.finished_time = datetime.now()
-                    db.session.commit()
-                    return jsonSuccess({'msg': 'Finish wish success'}), 200
+                # 在任何情况下都可以把状态变成完成 即使没有人帮助
+                # if wish.status != "finishing":
+                #     return jsonError(WishError.WISH_STATUS_WRONG), 403
+                # else:
+                wish.status = "finished"
+                wish.finished_time = datetime.now()
+                db.session.commit()
+                return jsonSuccess({'msg': 'Finish wish success'}), 200
 
             if action == "close":
                 wish.status = "closed"
