@@ -241,7 +241,7 @@ def reset_password():
         new_password = request.json.get('new_password', '')
         checkcode = request.json.get('checkcode', '')
         if redisClient.get("forgetcheckcode:" + username) != checkcode:
-            return jsonError(UserError.CHECKCODE_ERROR)
+            return jsonError(UserError.CHECKCODE_ERROR), 403
         enc_password = get_enc_password(new_password)
         User.query.filter_by(username=username).update({"password": enc_password})
         try:
@@ -254,7 +254,7 @@ def reset_password():
     except Exception, e:
         print e
         db.session.rollback()
-        return jsonError(GlobalError.UNDEFINED_ERROR)
+        return jsonError(GlobalError.UNDEFINED_ERROR), 403
 
 @api.route('/user', methods=["POST"])
 def user_register():
@@ -340,7 +340,9 @@ def update(current_user):
     '''
     try:
         token = request.json['token']
-
+        print "Update:", request.json.get("nickname")
+        print "Update:", request.json.get("gender")
+        print "Update:", request.json.get("school")
         if request.json.get("nickname") != None:
             User.query.filter_by(id = current_user.id).update({"nickname": request.json.get("nickname", "")})
 
