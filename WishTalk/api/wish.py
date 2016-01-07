@@ -6,6 +6,7 @@ from api import api, ERROR_WISH, GlobalError
 from flask import request
 from model.wish import Wish, WishLike, WishComment
 from util.jsonResponse import jsonSuccess, jsonError
+from datetime import datetime
 
 
 '''
@@ -179,6 +180,7 @@ def action_on_wish(current_user, wish_id=None):
                     return jsonError(WishError.WISH_STATUS_WRONG), 403
                 else:
                     wish.status = "finished"
+                    wish.finished_time = datetime.now()
                     db.session.commit()
                     return jsonSuccess({'msg': 'Finish wish success'}), 200
 
