@@ -48,6 +48,7 @@ class Wish(db.Model):
             'id': self.id,
             'title': self.title,
             'content': self.content,
+            'location': self.location,
             'create_time': self.create_time.strftime("%Y-%m-%d %H:%M:%S"),
             'out_time': self.out_time.strftime("%Y-%m-%d %H:%M:%S"),
             'finished_time': self.finished_time.strftime("%Y-%m-%d %H:%M:%S") if self.finished_time else "",
