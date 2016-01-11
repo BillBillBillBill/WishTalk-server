@@ -190,7 +190,7 @@ def action_on_wish(current_user, wish_id=None):
                 wish.helper_id = None
                 db.session.commit()
                 return jsonSuccess({'msg': 'Close wish success'}), 200
-
+        return jsonError(WishError.WISH_STATUS_WRONG), 403
     except Exception, e:
         print e
         db.session.rollback()
