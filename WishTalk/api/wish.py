@@ -186,8 +186,9 @@ def action_on_wish(current_user, wish_id=None):
                 return jsonSuccess({'msg': 'Finish wish success'}), 200
 
             if action == "close":
-                wish.status = "closed"
-                wish.helper_id = None
+                # wish.status = "closed"
+                # wish.helper_id = None
+                wish.delete()
                 db.session.commit()
                 return jsonSuccess({'msg': 'Close wish success'}), 200
         return jsonError(WishError.WISH_STATUS_WRONG), 403
