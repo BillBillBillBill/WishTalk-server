@@ -161,6 +161,8 @@
             <option value ="session">session</option>
             <option disabled>=====心愿部分=====</option>
             <option value="wish">wish</option>
+            <option value="my_wish">my_wish</option>
+            <option value="my_help_wish">my_help_wish</option>
             <option value="wish/like">wish/like</option>
             <option value="wish/comment">wish/comment</option>
         </select>
@@ -492,6 +494,46 @@
             }
             if (method == "DELETE") {
                 addCol("token");
+            }
+        }
+        else if (url == "my_wish") {
+            hidePost();
+            hidePut();
+            hideDelete();
+            if (method == "GET") {
+                addCol("token");
+                addCol("limit");
+                addCol("offset");
+                addCol("order_by");
+            }
+            if (method == "POST") {
+                methodNotExist();
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                methodNotExist();
+            }
+        }
+        else if (url == "my_help_wish") {
+            hidePost();
+            hidePut();
+            hideDelete();
+            if (method == "GET") {
+                addCol("token");
+                addCol("limit");
+                addCol("offset");
+                addCol("order_by");
+            }
+            if (method == "POST") {
+                methodNotExist();
+            }
+            if (method == "PUT") {
+                methodNotExist();
+            }
+            if (method == "DELETE") {
+                methodNotExist();
             }
         }
         else if (url == "wish/like") {

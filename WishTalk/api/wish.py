@@ -96,6 +96,52 @@ def get_wish(current_user, wish_id=None):
         return jsonSuccess(ret), 200
 
 
+@api.route('/my_wish', methods=["GET"])
+def get_my_wish(current_user, wish_id=None):
+    '''
+    可选参数:
+    limit <int> - 返回记录的数量
+    offset <int> - 返回记录的开始位置
+    order_by <string> - 排序方式，可选 time或ctr，默认time
+    '''
+    order_by = request.args.get('order_by', 'time')
+    if order_by == 'ctr':
+        wishs = current_user.self_wishes.order_by(Wish.ctr.desc()).all()          #按热度排列
+    else:
+        wishs = current_user.self_wishes.order_by(Wish.create_time.desc()).all()  #按时间排列
+    limit = int(request.args.get('limit', len(wishs)))
+    offset = int(request.args.get('offset', 0))
+    wishs = wishs[offset:limit+offset]
+    ret = []
+    for wish in wishs:
+        s = wish.to_dict()
+        s['has_like'] = (current_user.like_wishs.filter_by(wish_id = wish.id).count() != 0) if current_user else False
+        ret.append(s)
+    return jsonSuccess(ret), 200
+
+@api.route('/my_help_wish', methods=["GET"])
+def get_my_help_wish(current_user, wish_id=None):
+    '''
+    可选参数:
+    limit <int> - 返回记录的数量
+    offset <int> - 返回记录的开始位置
+    order_by <string> - 排序方式，可选 time或ctr，默认time
+    '''
+    order_by = request.args.get('order_by', 'time')
+    if order_by == 'ctr':
+        wishs = current_user.help_wishes.order_by(Wish.ctr.desc()).all()          #按热度排列
+    else:
+        wishs = current_user.help_wishes.order_by(Wish.create_time.desc()).all()  #按时间排列
+    limit = int(request.args.get('limit', len(wishs)))
+    offset = int(request.args.get('offset', 0))
+    wishs = wishs[offset:limit+offset]
+    ret = []
+    for wish in wishs:
+        s = wish.to_dict()
+        s['has_like'] = (current_user.like_wishs.filter_by(wish_id = wish.id).count() != 0) if current_user else False
+        ret.append(s)
+    return jsonSuccess(ret), 200
+
 @api.route('/wish', methods=['POST'])
 @token_required
 def create_wish(current_user):
