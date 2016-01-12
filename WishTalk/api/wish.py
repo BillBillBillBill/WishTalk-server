@@ -97,7 +97,8 @@ def get_wish(current_user, wish_id=None):
 
 
 @api.route('/my_wish', methods=["GET"])
-def get_my_wish(current_user, wish_id=None):
+@token_required
+def get_my_wish(current_user):
     '''
     可选参数:
     limit <int> - 返回记录的数量
@@ -120,7 +121,8 @@ def get_my_wish(current_user, wish_id=None):
     return jsonSuccess(ret), 200
 
 @api.route('/my_help_wish', methods=["GET"])
-def get_my_help_wish(current_user, wish_id=None):
+@token_required
+def get_my_help_wish(current_user):
     '''
     可选参数:
     limit <int> - 返回记录的数量
